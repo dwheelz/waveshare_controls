@@ -20,7 +20,7 @@ gpio_pins = {
     KEYS.KEY_PRESS_PIN: ["rectangle", (20, 22, 40, 40)],
     KEYS.KEY1_PIN: ["ellipse", (70, 0, 90, 20)],
     KEYS.KEY2_PIN: ["ellipse", (100, 20, 120, 40)],
-    KEYS.KEY2_PIN: ["ellipse", (70, 40, 90, 60)]
+    KEYS.KEY3_PIN: ["ellipse", (70, 40, 90, 60)]
 }
 
 key_state = {
