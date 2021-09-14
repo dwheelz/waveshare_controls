@@ -23,11 +23,6 @@ gpio_pins = {
     KEYS.KEY3_PIN: ["ellipse", (70, 40, 90, 60)]
 }
 
-key_state = {
-    KEYS.KEY1_PIN: False,
-    KEYS.KEY2_PIN: False,
-    KEYS.KEY2_PIN: False
-}
 
 def main():
     """The main funct"""
@@ -68,83 +63,18 @@ def main():
         for key, vals in gpio_pins.items():
             draw_shape = getattr(draw, vals[0])
             if key in [KEYS.KEY1_PIN, KEYS.KEY2_PIN, KEYS.KEY3_PIN]:
-                pass
-            #     if GPIO.input(key) and persistent_key != key_state[key]:
-            #         key_state[key] = False
-            #         _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ZERO)
-            #     else:
-            #         wait_after_render = True
-            #         persistent_key = key_state[key]
-            #         key_state[key] = True
-            #         _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ONE)
-            #         print(str(key))
-
+                if not GPIO.input(key) and (persistent_key != key):
+                    wait_after_render = True
+                    persistent_key = key
+                    _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ONE)
+                elif GPIO.input(key) and (persistent_key != key):
+                    _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ZERO)
             elif GPIO.input(key):
                 _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ZERO)
             else:
                 wait_after_render = True
                 _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ONE)
                 print(str(key))
-
-        # if GPIO.input(KEYS.KEY_UP_PIN): # button is released
-        #     _draw(draw.polygon, up, outline=255, fill=0)
-        # else: # button is pressed:
-        #     wait_after_render = _draw(draw.polygon, up, outline=255, fill=1)
-        #     print("Up")
-
-        # if GPIO.input(KEYS.KEY_LEFT_PIN):
-        #     _draw(draw.polygon, left, outline=255, fill=0)
-        # else:
-        #     wait_after_render = _draw(draw.polygon, left, outline=255, fill=1)
-        #     print("left")
-
-        # if GPIO.input(KEYS.KEY_RIGHT_PIN):
-        #     _draw(draw.polygon, right, outline=255, fill=0)
-        # else:
-        #     wait_after_render = _draw(draw.polygon, right, outline=255, fill=1)
-        #     print("right")
-
-        # if GPIO.input(KEYS.KEY_DOWN_PIN):
-        #     _draw(draw.polygon, down, outline=255, fill=0)
-        # else:
-        #     wait_after_render = _draw(draw.polygon, down, outline=255, fill=1)
-        #     print("down")
-
-        # if GPIO.input(KEYS.KEY_PRESS_PIN):
-        #     _draw(draw.rectangle, middle, outline=255, fill=0)
-        # else:
-        #     wait_after_render = _draw(draw.rectangle, middle, outline=255, fill=1)
-        #     print("centre")
-
-        # if GPIO.input(KEYS.KEY1_PIN) and persistent_key != KEYSTATE["ONE"][0]:
-        #     _draw(draw.ellipse, pin_1, outline=255, fill=0)
-        #     KEYSTATE["ONE"][1] = False
-        # else:
-        #     persistent_key = KEYSTATE["ONE"][0]
-        #     if not KEYSTATE["ONE"][1]:
-        #         wait_after_render = _draw(draw.ellipse, pin_1, outline=255, fill=1)
-        #         print("KEY1")
-        #         KEYSTATE["ONE"][1] = True
-
-        # if GPIO.input(KEYS.KEY2_PIN) and persistent_key != KEYSTATE["TWO"][0]:
-        #     _draw(draw.ellipse, pin_2, outline=255, fill=0)
-        #     KEYSTATE["TWO"][1] = False
-        # else:
-        #     persistent_key = KEYSTATE["TWO"][0]
-        #     if not KEYSTATE["TWO"][1]:
-        #         wait_after_render = _draw(draw.ellipse, pin_2, outline=255, fill=1)
-        #         print("KEY2")
-        #         KEYSTATE["TWO"][1] = True
-
-        # if GPIO.input(KEYS.KEY3_PIN) and persistent_key != KEYSTATE["THREE"][0]:
-        #     _draw(draw.ellipse, pin_3, outline=255, fill=0)
-        #     KEYSTATE["THREE"][1] = False
-        # else:
-        #     persistent_key = KEYSTATE["THREE"][0]
-        #     if not KEYSTATE["THREE"][1]:
-        #         wait_after_render = _draw(draw.ellipse, pin_3, outline=255, fill=1)
-        #         print("KEY3")
-        #         KEYSTATE["THREE"][1] = True
 
         disp.show_image(disp.getbuffer(image))
         if wait_after_render:
