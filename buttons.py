@@ -7,8 +7,9 @@ from PIL import ImageDraw
 
 import RPi.GPIO as GPIO
 
-from common import KEYS, OUTLINE, FILL_ZERO, FILL_ONE
+from common import KEYS, OUTLINE, FILL_ZERO, FILL_ONE, EXPECTED_BULB_NAMES
 from common.waveshare.SH1106 import SH1106
+from common.kasa_bulbs import get_bulbs, async_run
 
 
 # on screen icons
@@ -22,7 +23,6 @@ gpio_pins = {
     KEYS.KEY2_PIN: ["ellipse", (100, 20, 120, 40)],
     KEYS.KEY3_PIN: ["ellipse", (70, 40, 90, 60)]
 }
-
 
 def main():
     """The main funct"""
@@ -40,6 +40,10 @@ def main():
     GPIO.setup(KEYS.KEY2_PIN,        GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Input with pull-up
     GPIO.setup(KEYS.KEY3_PIN,        GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Input with pull-up
 
+    # GET BULBS
+    _bulbs = get_bulbs()
+    bulb_keys = {KEYS.KEY1_PIN: _bulbs[EXPECTED_BULB_NAMES[0]], KEYS.KEY2_PIN: _bulbs[EXPECTED_BULB_NAMES[0]]}
+
     # Create initial image and set it
     image = Image.new('1', (disp.width, disp.height), "WHITE")
     draw = ImageDraw.Draw(image)
@@ -52,7 +56,6 @@ def main():
         render_wait = False
         obj(*args, **kwargs)
         if kwargs["fill"] == 1:
-            print("Key pressed, set two waits (1: debounce, 2: re-draw for niceness)")
             sleep(0.2) # debounce
             render_wait = True
 
@@ -64,6 +67,7 @@ def main():
             draw_shape = getattr(draw, vals[0])
             if key in [KEYS.KEY1_PIN, KEYS.KEY2_PIN, KEYS.KEY3_PIN]:
                 if not GPIO.input(key) and (persistent_key != key):
+                    # BUTTON PRESSED
                     wait_after_render = True
                     persistent_key = key
                     _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ONE)
@@ -72,9 +76,9 @@ def main():
             elif GPIO.input(key):
                 _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ZERO)
             else:
+                # BUTTON PRESSED
                 wait_after_render = True
                 _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ONE)
-                print(str(key))
 
         disp.show_image(disp.getbuffer(image))
         if wait_after_render:

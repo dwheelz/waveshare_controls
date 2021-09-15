@@ -28,3 +28,5 @@ class KEYS:
 OUTLINE = 255
 FILL_ZERO = 0
 FILL_ONE = 1
+
+EXPECTED_BULB_NAMES = ["bongoNC", "beddyboi"]
