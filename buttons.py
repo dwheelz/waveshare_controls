@@ -24,6 +24,24 @@ gpio_pins = {
     KEYS.KEY3_PIN: ["ellipse", (70, 40, 90, 60)]
 }
 
+def square_press(bulb, req_state) -> bool:
+    """square button press"""
+    state_dict = {0: "turn_off", 1: "turn_on"}
+    updated_val = async_run(getattr(bulb, state_dict[req_state])())
+    return bool(updated_val["on_off"])
+
+def bulb_brightness(bulb, req_state) -> int:
+    """Decreases the brightness of the bulb"""
+    # I know, this isn't sexy at all
+    if req_state > 100:
+        return 100
+    elif req_state < 0:
+        return 0
+
+    # we should return the actual value, maybe i should do something if it fails....
+    updated_val = async_run(bulb.set_brightness(req_state))
+    return updated_val["brightness"]
+
 def main():
     """The main funct"""
     # Setup
@@ -42,7 +60,12 @@ def main():
 
     # GET BULBS
     _bulbs = get_bulbs()
-    bulb_keys = {KEYS.KEY1_PIN: _bulbs[EXPECTED_BULB_NAMES[0]], KEYS.KEY2_PIN: _bulbs[EXPECTED_BULB_NAMES[0]]}
+    bulb_keys = {KEYS.KEY1_PIN: _bulbs[EXPECTED_BULB_NAMES[0]], KEYS.KEY2_PIN: _bulbs[EXPECTED_BULB_NAMES[1]]}
+    # yes i am being lazy..
+    bulb_states = {
+        KEYS.KEY1_PIN: bulb_keys[KEYS.KEY1_PIN].light_state,
+        KEYS.KEY2_PIN: bulb_keys[KEYS.KEY2_PIN].light_state
+    }
 
     # Create initial image and set it
     image = Image.new('1', (disp.width, disp.height), "WHITE")
@@ -77,6 +100,18 @@ def main():
                 _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ZERO)
             else:
                 # BUTTON PRESSED
+                if key == KEYS.KEY_PRESS_PIN:
+                    bulb_state = square_press(bulb_keys[persistent_key], int(not bulb_states[persistent_key]["on_off"]))
+                    bulb_states[persistent_key]["on_off"] = bulb_state
+                elif key == KEYS.KEY_UP_PIN or key == KEYS.KEY_DOWN_PIN:
+                    # this could be nicer, much nicer
+                    current_brightness = bulb_states[persistent_key]["brightness"]
+                    if key == KEYS.KEY_UP_PIN:
+                        bulb_state = bulb_brightness(bulb_keys[persistent_key], current_brightness + 5)
+                    else:
+                        bulb_state = bulb_brightness(bulb_keys[persistent_key], current_brightness - 5)
+                    bulb_states[persistent_key]["brightness"] = bulb_state
+
                 wait_after_render = True
                 _draw(draw_shape, vals[1], outline=OUTLINE, fill=FILL_ONE)
 
